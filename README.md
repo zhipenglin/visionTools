@@ -9,7 +9,7 @@
 3. 找到插件对应图标，点击，上传设计稿文件
 3. 点击对应的设计稿调整好大小位置透明度，点击锁定
 
-[演示](https://github.com/zhipenglin/visionTools/blob/master/show.gif);
+![演示](https://github.com/zhipenglin/visionTools/blob/master/show.gif)
 
 ## 注意
 
