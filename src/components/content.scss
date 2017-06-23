@@ -1,0 +1,55 @@
+@import "../fn";
+
+.vt-content {
+  &--locked {
+    .vt-content__cover, .vt-content__img-outer {
+      pointer-events: none;
+    }
+  ;
+    .vt-content__img-outer {
+      background: transparent;
+      border: none;
+      animation: none;
+    }
+  }
+  &__cover {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+  }
+  &__img {
+    display: block;
+    width: 100%;
+    transform-origin: 50% 0;
+    &-outer {
+      cursor: pointer;
+      position: absolute;
+      user-select: none;
+      top: 0;
+      left: 0;
+      z-index: 10000;
+      opacity: 0.5;
+      @include ant-border;
+      &:after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+  &__regulator {
+    user-select: none;
+    width: 300px;
+    position: fixed;
+    z-index: 10001;
+    bottom: 50px;
+    left: 50px;
+    @include glow-box;
+  }
+}

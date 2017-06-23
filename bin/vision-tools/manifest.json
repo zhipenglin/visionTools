@@ -1,0 +1,43 @@
+{
+  "name": "Vision Tools",
+  "version": "3.1.5",
+  "description": "Chrome and Firefox DevTools extension.",
+  "manifest_version": 2,
+  "icons": {
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "browser_action": {
+    "default_icon": {
+      "16": "icons/16-gray.png",
+      "48": "icons/48-gray.png",
+      "128": "icons/128-gray.png"
+    },
+    "default_title": "Vision Tools",
+    "default_popup": "popups/popup.html"
+  },
+  "permissions": [
+    "http://*/*",
+    "https://*/*",
+    "file:///*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "css":[
+        "dist/content.style.css"
+      ],
+      "js": [
+        "dist/common.js","dist/content.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "scripts": [ "dist/background.js" ],
+    "persistent": false
+  }
+}

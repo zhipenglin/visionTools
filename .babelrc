@@ -1,0 +1,13 @@
+{
+  "presets": [
+    "latest","stage-0","react"
+  ],
+  "plugins": ["transform-runtime","transform-decorators-legacy","syntax-dynamic-import"],
+  "env": {
+    "development": {
+      "presets": [
+        "react-hmre"
+      ]
+    }
+  }
+}

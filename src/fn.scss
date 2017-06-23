@@ -1,0 +1,18 @@
+@mixin glow-box {
+  background-color: #fff;
+  border: 1px solid #eeeeff;
+  box-shadow: 0 1px 15px 0 rgba(66, 66, 255, 0.20);
+}
+
+@keyframes ants {
+  to {
+    background-position: 100% 100%
+  }
+}
+
+@mixin ant-border($color:#1296db) {
+  border: 1px solid transparent;
+  background: linear-gradient(white, white) padding-box,
+  repeating-linear-gradient(-45deg, $color 0, $color 25%, transparent 0, transparent 50%) 0 / .6em .6em;
+  animation: ants 40s linear infinite;
+}

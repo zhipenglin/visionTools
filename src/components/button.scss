@@ -1,0 +1,31 @@
+.c-button {
+  transition: transform 200ms, box-shadow 200ms;
+  cursor: pointer;
+  user-select: none;
+  &--disabled {
+    cursor: not-allowed;
+  }
+  &--active {
+    @extend .c-button;
+    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.4) inset;
+    transform: translateY(1px) scale(0.99);
+  }
+}
+
+.c-update {
+  position: relative;
+  &__file-outer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+  }
+  &__file-input {
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+}
