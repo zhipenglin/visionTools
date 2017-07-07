@@ -1,4 +1,6 @@
-# visionTools
+# visionTools v1.1.0
+
+添加了标尺工具
 
 是一个用于在前端切图过程中矫正和设计稿差异的chrome浏览器插件
 
