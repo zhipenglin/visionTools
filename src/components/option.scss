@@ -1,0 +1,68 @@
+$name: 'c-option';
+.#{$name} {
+  border-radius: 5px;
+  border: dashed 1px #1296db;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  user-select: none;
+  margin-bottom: 4px;
+  &:last-child {
+    margin-bottom: 0;
+  }
+  &--close {
+    @extend .#{$name};
+    border-color: #bfbfbf;
+    filter: grayscale(100%);
+  }
+  @mixin button {
+    background-size: 100%;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    margin: 0 5px;
+  }
+  &__locked {
+    background: url('../img/lock-open.svg');
+    @include button;
+    &--close {
+      @extend .#{$name}__locked;
+      background-image: url('../img/lock-close.svg');
+    }
+  }
+  &__angle {
+    background: url('../img/angle-open.svg');
+    @include button;
+    &--close {
+      @extend .#{$name}__angle;
+      background-image: url('../img/angle-close.svg');
+    }
+  }
+  &__coordinate {
+    background: url('../img/coordinate-open.svg');
+    @include button;
+    &--close {
+      @extend .#{$name}__coordinate;
+      background-image: url('../img/coordinate-close.svg');
+    }
+  }
+  &__degree {
+    background: url('../img/degree-open.svg');
+    @include button;
+    &--close {
+      @extend .#{$name}__degree;
+      background-image: url('../img/degree-close.svg');
+    }
+  }
+  &__ranges {
+    flex: 1;
+    &-item{
+      display: flex;
+    }
+  }
+  &__label {
+    width: 70px;
+    font-size: 12px;
+    color: #1296db;
+  }
+}

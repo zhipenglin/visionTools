@@ -3,6 +3,7 @@ import classnames from 'classnames'
 import './button.scss'
 
 export default class extends PureComponent {
+    static displayName = 'Button';
     static defaultProps = {
         disabled: false
     };
@@ -47,7 +48,8 @@ export default class extends PureComponent {
     render() {
         const {className, disabled, children, ...other} = this.props;
         return (
-            <div className={classnames("c-button", {
+            <div className={classnames({
+                "c-button": !this.state.active && !disabled,
                 "c-button--active": this.state.active && !disabled,
                 "c-button--disabled": disabled
             }, className)} {...other} onMouseDown={this.handlerMouseDown} onMouseUp={this.handlerMouseUp}

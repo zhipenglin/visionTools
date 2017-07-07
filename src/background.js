@@ -1,112 +1,158 @@
+import merge from 'lodash.merge'
 import setBrowserActionIcon from './utils/setBrowserActionIcon'
+import {POPUP_PORT_NAME, CONTENT_PORT_NAME} from './utils/CONSTANT'
 
-let imgList = [];
-let data = {
-    "vision_tools_popup": {
-        connect: null
-    },
-    "vision_tools_content": {}
+const DATA = {
+    imgList:[],
+    [POPUP_PORT_NAME]: {},
+    [CONTENT_PORT_NAME]: {}
 };
 
-function sendTo(port, msg, tabId) {
-    function send(connect) {
-        connect.postMessage({
-            name: msg.name,
-            message: msg.message
-        })
+class Content{
+    static getTab(id){
+        return DATA[CONTENT_PORT_NAME][id]||{};
     }
-
-    if (port === 'vision_tools_popup') {
-        send(data[port].connect);
-    } else if (port === 'vision_tools_content') {
-        if (tabId) {
-            data[port][tabId] && send(data[port][tabId].connect);
-        } else {
-            for (let tabData of data[port]) {
-                send(tabData.connect);
-            }
+    static getConnect(id){
+        return Content.getTab(id).connect;
+    }
+    static getContent(id){
+        let connect=Content.getConnect(id);
+        return new Content(id,connect);
+    }
+    static getBrowserActionIconState(id){
+        let content=new Content(id);
+        return content.getImg()||content.getRuleData().show;
+    }
+    constructor(tabId,connect){
+        this.id=tabId;
+        this.portName=CONTENT_PORT_NAME;
+        this.connect=connect;
+        this.eventList={};
+        this.init();
+    }
+    init(){
+        if(!this.connect){
+            console.warn('tab的connect还未建立');
+            return;
         }
+        this.setConnect(this.connect);
+        this.connect.onMessage.addListener((msg)=>{
+            this.eventList[msg.name]&&this.eventList[msg.name].forEach((callback)=>{
+                callback(msg.message);
+            });
+        });
+    }
+    getData(){
+        return Object.assign({},DATA[this.portName][this.id]);
+    }
+    getSendData(){
+        return {
+            imgData:Object.assign({},this.getImgStyleData()),
+            imgSrc:this.getImg(),
+            ruleData:this.getRuleData()
+        }
+    }
+    getImgData(){
+        return Object.assign({},this.getData().imgData);
+    }
+    getImgStyleData(){
+        let ImgData=this.getImgData();
+        delete ImgData.selectIndex;
+        return ImgData;
+    }
+    getRuleData(){
+        return Object.assign({},this.getData().ruleData);
+    }
+    getImg(){
+        let imgData=this.getImgData();
+        return DATA.imgList[imgData.selectIndex]||'';
+    }
+    setData(data={}){
+        DATA[this.portName][this.id]=merge({},this.getData(),data);
+        return this;
+    }
+    setImgData(imgData={}){
+        this.setData(merge({},this.getData(),{imgData}));
+        return this;
+    }
+    setRuleData(ruleData={}){
+        this.setData(merge({},this.getData(),{ruleData}));
+        return this;
+    }
+    setConnect(connect){
+        if(!connect){
+            return this;
+        }
+        this.setData(merge({},this.getData(),{connect}));
+        return this;
+    }
+    send(name,message){
+        this.connect&&this.connect.postMessage({name,message});
+        return this;
+    }
+    on(name,callback){
+        if(!this.eventList[name]) {
+            this.eventList[name] = [];
+        }
+        this.eventList[name].push(callback);
+        return this;
     }
 }
-chrome.extension.onConnect.addListener(function (connect) {
-    function send(name, msg) {
-        connect.postMessage({
-            name, message: msg
+
+class PopUp{
+    constructor(connect){
+        this.connect=connect;
+        this.eventList={};
+        this.init();
+    }
+    init(){
+        this.connect.onMessage.addListener((msg)=>{
+            this.eventList[msg.name]&&this.eventList[msg.name].forEach((callback)=>{
+                callback(msg.message);
+            });
         });
     }
-
-    function on(messageBack) {
-        connect.onMessage.addListener(function (msg) {
-            messageBack[msg.name] && messageBack[msg.name](msg.message);
-        });
+    send(name,message){
+        this.connect&&this.connect.postMessage({name,message});
+        return this;
     }
-
-    if (connect.name == "vision_tools_popup") {
-        let popupData = data[connect.name];
-        popupData.connect = connect;
-        on({
-            getInfo() {
-                chrome.tabs.getSelected(null, function (tab) {
-                    let tabData = data["vision_tools_content"][tab.id], message = {imgList};
-                    if (tabData && tabData.img) {
-                        message.activeKey = imgList.indexOf(tabData.img);
-                        message.locked = tabData.locked;
-                        message.scale = tabData.scale;
-                        message.opacity = tabData.opacity;
-                    }
-                    send('getInfo', message);
-                });
-            },
-            setInfo(msg){
-                imgList = msg.imgList;
-                let img = imgList[msg.activeKey];
-                chrome.tabs.getSelected(null, function (tab) {
-                    sendTo('vision_tools_content', {
-                        name: 'setImg',
-                        message: img
-                    }, tab.id);
-                    sendTo('vision_tools_content', {
-                        name: 'setImgStyle',
-                        message: {locked: msg.locked, scale: msg.scale, opacity: msg.opacity}
-                    }, tab.id);
-                    let tabData = data['vision_tools_content'][tab.id];
-                    if (tabData) {
-                        Object.assign(tabData, {img, locked: msg.locked, scale: msg.scale, opacity: msg.opacity});
-                    }
-                });
-            }
-        });
-    } else if (connect.name == "vision_tools_content") {
-        let tabId = connect.sender.tab.id;
-        if (!data[connect.name][tabId]) {
-            data[connect.name][tabId] = {};
+    on(name,callback){
+        if(!this.eventList[name]) {
+            this.eventList[name] = [];
         }
-        let tabData = data[connect.name][tabId];
-        tabData.connect = connect;
-        on({
-            getInfo(){
-                if (tabData.img) {
-                    send('setImg', tabData.img);
-                    send('setImgStyle', {
-                        locked: tabData.locked,
-                        scale: tabData.scale,
-                        opacity: tabData.opacity,
-                        translate: tabData.translate
-                    });
-                }
-            },
-            setImgStyle(msg){
-                Object.assign(tabData, {
-                    locked: msg.locked,
-                    scale: msg.scale,
-                    opacity: msg.opacity,
-                    translate: msg.translate
-                });
-            }
-        });
+        this.eventList[name].push(callback);
+        return this;
     }
-});
+}
 
 chrome.tabs.onSelectionChanged.addListener((tabId) => {
-    setBrowserActionIcon(data['vision_tools_content'][tabId] && data['vision_tools_content'][tabId].img);
+    setBrowserActionIcon(Content.getBrowserActionIconState(tabId));
 });
+
+chrome.extension.onConnect.addListener(function (connect) {
+    if(connect.name==CONTENT_PORT_NAME){
+        let content=new Content(connect.sender.tab.id,connect);
+        content.on('initData',()=>{
+            content.send('initData',content.getSendData());
+        }).on('dataChange',({imgData,ruleData})=>{
+            content.setData({imgData,ruleData});
+        });
+    }else if(connect.name==POPUP_PORT_NAME){
+        let popup=new PopUp(connect);
+        popup.on('initData',()=>{
+            chrome.tabs.getSelected(null, function ({id}) {
+                let content=Content.getContent(id);
+                popup.send('initData',{
+                    imgData:Object.assign({},content.getImgData(),{list:DATA.imgList}),
+                    ruleData:content.getRuleData()
+                }).on('dataChange',({imgData,ruleData})=>{
+                    DATA.imgList=imgData.list;
+                    delete imgData.list;
+                    content.setData({imgData,ruleData});
+                    content.send('dataChange',content.getSendData());
+                });
+            });
+        });
+    }
+});
+

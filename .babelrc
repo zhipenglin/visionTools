@@ -1,6 +1,6 @@
 {
   "presets": [
-    "latest","stage-0","react"
+    ["latest",{"modules":false}],"stage-0","react"
   ],
   "plugins": ["transform-runtime","transform-decorators-legacy","syntax-dynamic-import"],
   "env": {
@@ -8,6 +8,13 @@
       "presets": [
         "react-hmre"
       ]
+    },
+    "test":{
+      "plugins": ["transform-es2015-modules-commonjs",[
+        "babel-plugin-transform-require-ignore",{
+          "extensions": [".scss"]
+        }
+      ]]
     }
   }
 }

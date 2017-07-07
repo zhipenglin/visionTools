@@ -4,6 +4,8 @@ import Button from './Button'
 import zip from '../utils/zip'
 
 export default class extends PureComponent {
+    static displayName = "UpdateButton";
+
     constructor() {
         super();
         this.handlerChange = this.handlerChange.bind(this);
@@ -14,7 +16,11 @@ export default class extends PureComponent {
         const target = e.target, file = target.files[0];
         if (file) {
             (isZip ? zip(file) : Promise.resolve(file)).then((file) => {
-                onChange && onChange(file);
+                const fileReader = new FileReader();
+                fileReader.readAsDataURL(file);
+                fileReader.onload = (e) => {
+                    onChange && onChange(e.target.result);
+                };
             });
         }
 

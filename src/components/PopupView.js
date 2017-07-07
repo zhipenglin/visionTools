@@ -1,138 +1,103 @@
 import React, {PureComponent} from 'react'
 import classnames from 'classnames'
+import merge from 'lodash.merge'
 import UpdateButton from './UpdateButton'
 import Button from './Button'
-import Regulator from './Regulator'
-import Connection from '../utils/Connection'
+import ImagePreview from './ImagePreview'
+import ImageOption from './ImageOption'
+import RuleOption from './RuleOption'
+import {POPUP_PORT_NAME} from '../utils/CONSTANT'
 import setBrowserActionIcon from '../utils/setBrowserActionIcon'
-import './style.scss'
+import Connection from '../utils/Connection'
+import './popup.scss'
 
-const connection = new Connection("vision_tools_popup");
-class ImgItem extends PureComponent {
-    state = {
-        active: false
-    };
-
-    constructor() {
-        super();
-        this.handlerClick = this.handlerClick.bind(this);
-    }
-
-    handlerClick() {
-        const {id, onClick} = this.props;
-        onClick && onClick(id);
-    }
-
-    render() {
-        const {src, active} = this.props;
-        return (
-            <Button className={classnames("vt-popup__item", {
-                "vt-popup__item--active": active
-            })} onClick={this.handlerClick}>
-                <img className="vt-popup__item-img" src={src}/>
-            </Button>
-        );
-    }
-}
+const connection = new Connection(POPUP_PORT_NAME);
 
 export default class extends PureComponent {
+    static displayName = 'PopupView';
     state = {
-        activeKey: -1,
-        scale: 50,
-        opacity: 60,
-        locked: false,
-        imgList: []
+        imgData: {
+            selectIndex: -1,
+            list: [],
+            scale: 100,
+            opacity: 60,
+            locked: false
+        },
+        ruleData: {
+            show: false,
+            locked: false,
+            angle: true,
+            coordinate: true,
+            degree: true
+        }
     };
 
     constructor() {
         super();
-        this.handlerChange = this.handlerChange.bind(this);
-        this.handlerItemClick = this.handlerItemClick.bind(this);
-        this.handlerRegulatorChange = this.handlerRegulatorChange.bind(this);
+        this.setImgData = this.setImgData.bind(this);
+        this.addImage = this.addImage.bind(this);
+        this.selectImage = this.selectImage.bind(this);
+        this.setRuleData = this.setRuleData.bind(this);
     }
 
     componentWillMount() {
-        connection.send('getInfo');
-        connection.on('getInfo', (msg) => {
-            let newState = {};
+        connection
+            .on('initData', (data) => {
+                this.setState(merge({}, this.state, data));
+            }).on('dataChange',(data)=>{
+                this.setState(merge({}, this.state, data));
+            }).send('initData');
+    }
 
-            if (Number.isInteger(msg.activeKey)) {
-                newState.activeKey = msg.activeKey;
-            }
-
-            if (Array.isArray(msg.imgList)) {
-                newState.imgList = msg.imgList;
-            }
-
-            if (msg.scale) {
-                newState.scale = msg.scale;
-            }
-
-            if (msg.locked) {
-                newState.locked = msg.locked;
-            }
-
-            if (msg.opacity) {
-                newState.opacity = msg.opacity;
-            }
-
-            this.setState(newState, () => {
-                setBrowserActionIcon(this.state.activeKey !== -1);
-            });
+    setImgData(newData) {
+        this.setState({
+            imgData: Object.assign({}, this.state.imgData, newData)
+        }, () => {
+            this.sendDataChangeMessage();
         });
     }
 
-    componentWillUpdate(nextProps, nextState) {
-        if (this.state.activeKey !== nextState.activeKey) {
-            setBrowserActionIcon(nextState.activeKey !== -1);
-        }
-        connection.send('setInfo', {
-            activeKey: nextState.activeKey,
-            imgList: nextState.imgList,
-            scale: nextState.scale,
-            opacity: nextState.opacity,
-            locked: nextState.locked
+    addImage(img) {
+        let list = this.state.imgData.list.slice(0);
+        list.push(img);
+        this.setImgData({list});
+    }
+
+    selectImage(selectIndex) {
+        this.setImgData({selectIndex});
+    }
+
+    setRuleData(newData) {
+        this.setState({
+            ruleData: Object.assign({}, this.state.ruleData, newData)
+        }, () => {
+            this.sendDataChangeMessage();
         });
     }
 
-    handlerChange(file) {
-        const {imgList} = this.state;
-        const fileReader = new FileReader();
-        fileReader.readAsDataURL(file);
-        fileReader.onload = (e) => {
-            let newImgList = imgList.slice(0);
-            newImgList.push(e.target.result);
-            this.setState({imgList: newImgList});
-        };
-    }
-
-    handlerItemClick(value) {
-        if (value !== this.state.activeKey) {
-            this.setState({activeKey: value});
-        } else {
-            this.setState({activeKey: -1});
-        }
-    }
-
-    handlerRegulatorChange(value) {
-        this.setState(value);
+    sendDataChangeMessage() {
+        setBrowserActionIcon(this.state.imgData.list[this.state.imgData.selectIndex] || this.state.ruleData.show);
+        connection.send('dataChange', this.state);
     }
 
     render() {
         return (
             <div className="vt-popup">
-                <div className="vt-popup__options">
-                    <UpdateButton className="vt-popup__btn-add" onChange={this.handlerChange}></UpdateButton>
+                <div className="vt-popup__btns">
+                    <UpdateButton className="vt-popup__btn-add" onChange={this.addImage}/>
+                    <Button className={classnames({
+                        "vt-popup__btn-rule": !this.state.ruleData.show,
+                        "vt-popup__btn-rule--active": this.state.ruleData.show
+                    })} onClick={this.setRuleData.bind(this, {show: !this.state.ruleData.show})}/>
                 </div>
-                {this.state.imgList.length > 0 && this.state.imgList[this.state.activeKey] ?
-                    <div className="vt-popup__regulator">
-                        <Regulator opacity={this.state.opacity} scale={this.state.scale} locked={this.state.locked}
-                                   onChange={this.handlerRegulatorChange}/>
-                    </div> : null}
-                <div className="vt-popup__list">
-                    {this.state.imgList.map((value, key) => <ImgItem onClick={this.handlerItemClick}
-                                                                     active={key === this.state.activeKey} src={value}
-                                                                     id={key} key={key}/>)}
+                <div className="vt-popup__options">
+                    {this.state.ruleData.show ? <RuleOption onChange={this.setRuleData} data={this.state.ruleData}/> : null}
+                    {this.state.imgData.list[this.state.imgData.selectIndex]?<ImageOption onChange={this.setImgData} data={this.state.imgData}/>:null}
+                </div>
+                <div className="vt-popup__preview">
+                    <ImagePreview list={this.state.imgData.list}
+                                  selectIndex={this.state.imgData.selectIndex}
+                                  onChange={this.selectImage}/>
                 </div>
             </div>
         );

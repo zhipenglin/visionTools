@@ -1,0 +1,12 @@
+$name:'c-rule';
+
+.#{$name}{
+  display: block;
+  position: fixed;
+  left: 0;
+  top:0;
+  &--coordinate{
+    @extend .#{$name};
+    cursor: none;
+  }
+}

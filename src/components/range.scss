@@ -1,43 +1,10 @@
-.c-regulator {
-  border-radius: 5px;
-  border: dashed 1px #1296db;
-  padding: 10px;
+$name: 'c-range';
+.#{$name} {
+  flex: 1;
   display: flex;
+  height: 20px;
   align-items: center;
-  user-select: none;
-  &--close {
-    border-color: #bfbfbf;
-    filter: grayscale(100%);
-  }
-  &__lock {
-    background: url('../img/lock-open.svg');
-    background-size: 100%;
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    &--close {
-      background-image: url('../img/lock-close.svg');
-    }
-  }
-  &__area {
-    flex: 1;
-  }
-  &__item {
-    display: flex;
-    align-items: center;
-  }
-  &__label {
-    width: 60px;
-    font-size: 12px;
-    color: #1296db;
-  }
-  &__range {
-    flex: 1;
-    display: flex;
-    height: 20px;
-    align-items: center;
-    padding: 0 10px;
-  }
+  padding: 0 10px;
   %scale_button {
     background-size: 100%;
     width: 15px;
@@ -58,9 +25,9 @@
   }
   &__slider {
     flex: 1;
-    height: 10px;
+    height: 5px;
     background-color: #bfbfbf;
-    border-radius: 5px;
+    border-radius: 3px;
     position: relative;
     margin: 0 10px;
     &-inner {
@@ -68,12 +35,12 @@
       width: 60%;
       height: 100%;
       background-color: #1296db;
-      border-radius: 5px;
+      border-radius: 3px;
     }
     &-btn {
       position: absolute;
       right: -7.5px;
-      top: -3px;
+      top: -5px;
       background-color: #fff;
       width: 15px;
       height: 15px;

@@ -1,18 +1,21 @@
-.c-button {
+$name: 'c-button';
+$up-name: 'c-update';
+.#{$name} {
   transition: transform 200ms, box-shadow 200ms;
   cursor: pointer;
   user-select: none;
   &--disabled {
+    @extend .#{$name};
     cursor: not-allowed;
   }
   &--active {
-    @extend .c-button;
+    @extend .#{$name};
     box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.4) inset;
     transform: translateY(1px) scale(0.99);
   }
 }
 
-.c-update {
+.#{$up-name} {
   position: relative;
   &__file-outer {
     position: absolute;

@@ -1,0 +1,39 @@
+$name: 'vt-popup';
+
+.#{$name} {
+  width: 300px;
+  min-height: 150px;
+  padding: 20px;
+  &__btns {
+    display: flex;
+    margin: 0 -5px 10px;
+  }
+  @mixin btn {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 0 5px;
+    background-size: 100%;
+  }
+  &__btn {
+    &-add {
+      background: url("../img/add.svg");
+      @include btn;
+    }
+    &-rule {
+      background: url("../img/rule.svg") #1296db no-repeat center;
+      @include btn;
+      background-size: 90%;
+      &--active {
+        @extend .#{$name}__btn-rule;
+        background-image: url('../img/rule-open.svg');
+        background-size: 80%;
+        box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.4) inset;
+      }
+    }
+  }
+  &__options {
+    margin-bottom: 10px;
+  }
+}
